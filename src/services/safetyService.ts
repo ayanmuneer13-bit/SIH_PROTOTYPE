@@ -176,3 +176,8 @@ export function assessSafety(input: string): SafetyAssessment {
     recommendedHelplines: isEmergency ? EMERGENCY_HELPLINES : []
   };
 }
+
+export const safetyService = {
+  assessSafety,
+  EMERGENCY_HELPLINES
+};

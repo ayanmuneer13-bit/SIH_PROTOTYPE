@@ -7,6 +7,9 @@ import { FilterBar } from '../components/medconnect/FilterBar';
 import { RequestModal } from '../components/medconnect/RequestModal';
 import { useLanguage } from '../data/LanguageContext';
 
+import { Link } from 'react-router-dom';
+import { storageService } from '../services/storageService';
+
 export const MedConnectPage: React.FC = () => {
   const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,34 +19,39 @@ export const MedConnectPage: React.FC = () => {
   const [selectedArea, setSelectedArea] = useState('all');
   const [selectedStudent, setSelectedStudent] = useState<MedicalStudent | null>(null);
 
+  // Load students including verified submissions
+  const allStudentsList = useMemo(() => {
+    return storageService.getVerifiedStudents();
+  }, []);
+
   // Extract unique filters
   const allLanguages = useMemo(() => {
     const set = new Set<string>();
-    MEDICAL_STUDENTS.forEach((s) => s.languages.forEach((l) => set.add(l)));
+    allStudentsList.forEach((s) => s.languages.forEach((l) => set.add(l)));
     return Array.from(set);
-  }, []);
+  }, [allStudentsList]);
 
   const allColleges = useMemo(() => {
     const set = new Set<string>();
-    MEDICAL_STUDENTS.forEach((s) => set.add(s.college));
+    allStudentsList.forEach((s) => set.add(s.college));
     return Array.from(set);
-  }, []);
+  }, [allStudentsList]);
 
   const allYears = useMemo(() => {
     const set = new Set<string>();
-    MEDICAL_STUDENTS.forEach((s) => set.add(s.year));
+    allStudentsList.forEach((s) => set.add(s.year));
     return Array.from(set);
-  }, []);
+  }, [allStudentsList]);
 
   const allAreas = useMemo(() => {
     const set = new Set<string>();
-    MEDICAL_STUDENTS.forEach((s) => s.areasOfInterest.forEach((a) => set.add(a)));
+    allStudentsList.forEach((s) => s.areasOfInterest.forEach((a) => set.add(a)));
     return Array.from(set);
-  }, []);
+  }, [allStudentsList]);
 
   // Filter students
   const filteredStudents = useMemo(() => {
-    return MEDICAL_STUDENTS.filter((s) => {
+    return allStudentsList.filter((s) => {
       const term = searchTerm.toLowerCase();
       const matchSearch =
         s.name.toLowerCase().includes(term) ||
@@ -58,7 +66,7 @@ export const MedConnectPage: React.FC = () => {
 
       return matchSearch && matchLang && matchCollege && matchYear && matchArea;
     });
-  }, [searchTerm, selectedLanguage, selectedCollege, selectedYear, selectedArea]);
+  }, [allStudentsList, searchTerm, selectedLanguage, selectedCollege, selectedYear, selectedArea]);
 
   const handleResetFilters = () => {
     setSearchTerm('');
@@ -73,9 +81,18 @@ export const MedConnectPage: React.FC = () => {
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header Hero Banner */}
         <div className="bg-gradient-to-r from-health-800 via-clinical-800 to-teal-900 rounded-3xl p-6 sm:p-10 text-white shadow-lg space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-health-200 text-xs font-semibold backdrop-blur-xs border border-white/20">
-            <GraduationCap className="w-4 h-4 text-health-300" />
-            <span>MedConnect Community Network</span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-health-200 text-xs font-semibold backdrop-blur-xs border border-white/20">
+              <GraduationCap className="w-4 h-4 text-health-300" />
+              <span>MedConnect Community Network</span>
+            </div>
+
+            <Link
+              to="/medconnect/verify"
+              className="self-start sm:self-auto px-4 py-2 bg-health-500 hover:bg-health-400 text-slate-950 font-black text-xs rounded-xl shadow-md transition flex items-center gap-1.5"
+            >
+              <span>Are you a medical student? Join & Get Verified</span>
+            </Link>
           </div>
 
           <div className="max-w-3xl space-y-2">
@@ -108,12 +125,14 @@ export const MedConnectPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Clear Non-Diagnostic Disclaimer Banner */}
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-900 flex items-start gap-3 shadow-xs">
+        {/* Clear Non-Diagnostic Disclaimer Banner - Mandatory Safety/Product Rule */}
+        <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 text-xs text-amber-950 flex items-start gap-3 shadow-xs">
           <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div className="leading-relaxed">
-            <strong>Code of Conduct & Scope of Guidance: </strong>
-            {t.medConnectDisclaimer} In case of severe or life-threatening symptoms, please call 112 / 108 emergency immediately.
+            <span className="font-extrabold block">IMPORTANT SAFETY & PRODUCT RULE:</span>
+            MedConnect connects patients with verified medical students for educational guidance and support.
+            It does not replace consultation with a licensed medical professional. Medical students must NOT
+            be represented as doctors and do NOT independently diagnose patients or prescribe medication.
           </div>
         </div>
 

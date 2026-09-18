@@ -14,9 +14,11 @@ export const Navbar: React.FC = () => {
 
   const navLinks = [
     { path: '/', label: t.navHome, icon: Activity },
-    { path: '/chat', label: t.navChat, icon: MessageSquare },
+    { path: '/kiosk', label: 'MediKiosk Intake', icon: Activity, badge: 'SIH26047' },
+    { path: '/queue', label: 'OPD Wait Estimator', icon: BarChart3 },
     { path: '/medconnect', label: t.navMedConnect, icon: Users },
-    { path: '/dashboard', label: t.navDashboard, icon: BarChart3 }
+    { path: '/chat', label: t.navChat, icon: MessageSquare },
+    { path: '/admin', label: 'Institutional Admin', icon: AlertCircle }
   ];
 
   return (
@@ -58,6 +60,11 @@ export const Navbar: React.FC = () => {
                 >
                   <Icon className={`w-4 h-4 ${isActive ? 'text-health-600' : 'text-slate-400'}`} />
                   <span>{link.label}</span>
+                  {link.badge && (
+                    <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-health-600 text-white shadow-xs">
+                      {link.badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}
